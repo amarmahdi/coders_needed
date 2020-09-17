@@ -2,9 +2,9 @@ import base64
 import codecs
 import json
 from telegram.utils import helpers
-from telegram.bot import Bot
+from telegram.bot import Bot, Update
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
-from telegram.ext import MessageHandler, Updater, CallbackQueryHandler, CommandHandler, MessageHandler, Filters, ConversationHandler, PicklePersistence
+from telegram.ext import MessageHandler, Updater, CallbackQueryHandler, CommandHandler, MessageHandler, Filters, ConversationHandler, PicklePersistence, CallbackContext
 
 BOT_ID = "-1001355338176"
 BOT_TOKEN = "1341348836:AAFf-LQeV1ZByCN9MhOkF7zyaXfQ3AIOdSw"
@@ -51,15 +51,32 @@ def messageSender():
     # Handle callback here mane
 
 
-def callback_query_handler(bot, update):
-    if bot.callback_query.data == "suck ma dick":
-        print(bot._effective_user.__dict__)
-        chat_id = bot._effective_user.id
-        print(chat_id)
-        bot.sendMessage(
-            chat_id=chat_id,
-            text='Help text for user ...',
-        )
+def callback_query_handler(update: Update, context: CallbackContext):
+    print(update.callback_query.__dict__)
+    if update.callback_query.data == "Submit":
+        try:
+
+            query = update.callback_query
+
+            query.answer()
+
+            query.edit_message_text(
+                text="Your item has been sent for verification",
+            )
+            # update.message.reply_text("Hey biyatch")
+            # bot.sendMessage(
+            #     chat_id=chat_id,
+            # )
+        except Exception as e:
+            print(e)
+    # if bot.callback_query.data == "suck ma dick":
+    #     print(bot._effective_user.__dict__)
+    #     chat_id = bot._effective_user.id
+    #     print(chat_id)
+    #     bot.sendMessage(
+    #         chat_id=chat_id,
+    #         text='Help text for user ...',
+    #     )
 
 
 def edit_message():
@@ -144,19 +161,21 @@ def job_types(update, context):
 
 
 def final(update, context):
+    data = context.user_data
     text = update.message.text.lower()
     context.user_data['job_type'] = text
-    update.message.reply_text(
-        "Your Job has been submitted !!")
+
+    message = """\nJob Title: {}\n\nCompany: {}\n\nJob Type: {}\n\nDescription: {}""".format(
+        data['job_name'], data['company'], data['job_type'], data['job_desc']
+    )
+
+    keyboard = [[InlineKeyboardButton("✅  Submit", callback_data='Submit')]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    update.message.reply_text(message,
+                              reply_markup=reply_markup
+                              )
+
     return FINAL
-
-
-# def end_response(update, context):
-#     text = update.message.text.lower()
-#     context.user_data['job_type'] = text
-#     update.message.reply_text("Your Job has been submitted !!")
-
-#     return ConversationHandler.END
 
 
 def main():
@@ -178,7 +197,7 @@ def main():
                 DESC: [MessageHandler(Filters.text, desc), ],
 
                 CMP: [MessageHandler(Filters.text, job_types)],
-                JOBTYPES: [MessageHandler(Filters.regex('^(Remote|Permanent|Contractual)$'), final)],
+                JOBTYPES: [MessageHandler(Filters.regex('^(Remote|Permanent|Contractual|)$'), final)],
                 # FINAL: [MessageHandler(Filters.text, end_response)]
                 # BIO: [MessageHandler(Filters.text & ~Filters.command, bio)]
             },
