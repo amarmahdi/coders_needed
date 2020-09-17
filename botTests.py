@@ -14,14 +14,14 @@ bot = Bot(token=BOT_TOKEN)
 TYPE, DESC, CMP, JOBTYPES, FINAL = range(5)
 
 reply_keyboard = [['Permanent', 'Remote'],
-                  ['Contractual']]
+                  ['Contractual', 'Hourly']]
 markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
 
 
 def filterJobData(jid):
     cur_job = None
     alljobs = json.load(
-        open('/home/anonny/scrapers/project_cneeded/data.json'))
+        open('/home/anonny/scrapers/coders_needed/data.json'))
     for data in alljobs:
         if jid == data["job_id"]:
             cur_job = data
@@ -33,7 +33,7 @@ def filterJobData(jid):
 
 def messageSender():
     alljobs = json.load(
-        open('/home/anonny/scrapers/project_cneeded/data.json'))
+        open('/home/anonny/scrapers/coders_needed/data.json'))
     for data in alljobs:
         message = """\nJob Title: {}\n\nCompany: {}\n\nJob Type: {}\n\nDescription: {}""".format(
             data['title'], data['company'], data['jobtype'], data['desc']
@@ -42,7 +42,9 @@ def messageSender():
         deepURL = helpers.create_deep_linked_url(
             bot.get_me().username, data['job_id'], group=False)
         keyboard = [[InlineKeyboardButton(
-            "Apply", callback_data='some_message', url=deepURL)]]
+            "Apply", callback_data='some_message', url=deepURL),
+            InlineKeyboardButton(
+            "Share", callback_data='share_applicatoin'), ]]
 
         x = bot.send_message(chat_id=BOT_ID, text=message,
                              reply_markup=InlineKeyboardMarkup(keyboard))
@@ -52,31 +54,29 @@ def messageSender():
 
 
 def callback_query_handler(update: Update, context: CallbackContext):
-    print(update.callback_query.__dict__)
     if update.callback_query.data == "Submit":
         try:
-
             query = update.callback_query
-
-            query.answer()
-
-            query.edit_message_text(
-                text="Your item has been sent for verification",
+            context.bot.answer_callback_query(
+                callback_query_id=query.id, text="Your Job post is being verified by Admins Please wait ....",
+                show_alert=True
             )
-            # update.message.reply_text("Hey biyatch")
-            # bot.sendMessage(
-            #     chat_id=chat_id,
-            # )
+            query.answer()
+            query.edit_message_text(
+                text="Your job application has been sent for verification",
+                show_alert=True
+            )
+            usr = update._effective_user
+            userDetails = {
+                'user_id': usr['id'], 'first_name': usr['first_name'],
+                'is_bot': usr['is_bot'], 'last_name': usr['last_name'],
+                'username': usr['username']}
+            finalJobData = context.user_data['user_details'] = userDetails
+            print(context.user_data)
         except Exception as e:
             print(e)
-    # if bot.callback_query.data == "suck ma dick":
-    #     print(bot._effective_user.__dict__)
-    #     chat_id = bot._effective_user.id
-    #     print(chat_id)
-    #     bot.sendMessage(
-    #         chat_id=chat_id,
-    #         text='Help text for user ...',
-    #     )
+
+    return ConversationHandler.END
 
 
 def edit_message():
@@ -90,7 +90,6 @@ def edit_message():
 
 # reply back based on the input
 def use_reply(user_input, mid):
-    print(FIRSTQID)
     if FIRSTQID is not None:
         if mid - FIRSTQID == 1:
             return "You have replied to my message"
@@ -107,13 +106,14 @@ def handle_reply(update, context):
 
 
 def start(update, context):
-    data = filterJobData(context.args[0])
-    message = """\nJob Title: {}\n\nCompany: {}\n\nJob Type: {}\n\nDescription: {}\n\nTo apply contact: {}""".format(
-        data['title'], data['company'], data['jobtype'], data['desc'], "https://t.me/%s" % data['repuname']
-    )
-    FIRSTQID = int(update.message.message_id)
-    update.message.reply_text(message)
-    print(FIRSTQID)
+    # data = filterJobData(context.args[0])
+    # message = """\nJob Title: {}\n\nCompany: {}\n\nJob Type: {}\n\nDescription: {}\n\nTo apply contact: {}""".format(
+    #     data['title'], data['company'], data['jobtype'], data['desc'], "https://t.me/%s" % data['repuname']
+    # )
+    # FIRSTQID = int(update.message.message_id)
+    update.message.reply_text("Hey there man",
+                              reply_markup=ReplyKeyboardRemove())
+    # print(FIRSTQID)
 
 
 def cancel(update, context):
@@ -126,19 +126,19 @@ def cancel(update, context):
 
 def strt(update, context):
     update.message.reply_text(
-        'Enter the product name: ')
+        'What is the job\'s Title ? : ')
     return TYPE
 
 
-def alldata(update, context):
-    print(context)
-    print(context.user_data)
+# def alldata(update, context):
+#     print(context)
+#     print(context.user_data)
 
 
 def name(update, context):
     user = update.message.from_user
     context.user_data['job_name'] = update.message.text
-    update.message.reply_text('Enter the product description here: ',
+    update.message.reply_text('Enter the job description here: ',
                               reply_markup=ReplyKeyboardRemove())
 
     return DESC
@@ -179,7 +179,7 @@ def final(update, context):
 
 
 def main():
-    tst = not False
+    tst = False
     if tst:
         pp = PicklePersistence(filename='conversationbot')
         updater = Updater(
@@ -189,7 +189,7 @@ def main():
             CallbackQueryHandler(callback_query_handler))
         updater.dispatcher.add_handler(CommandHandler('add', handle_reply))
         conv_handler = ConversationHandler(
-            entry_points=[CommandHandler('str', strt)],
+            entry_points=[CommandHandler('postjob', strt)],
 
             states={
                 TYPE: [MessageHandler(Filters.text, name)],
@@ -197,7 +197,7 @@ def main():
                 DESC: [MessageHandler(Filters.text, desc), ],
 
                 CMP: [MessageHandler(Filters.text, job_types)],
-                JOBTYPES: [MessageHandler(Filters.regex('^(Remote|Permanent|Contractual|)$'), final)],
+                JOBTYPES: [MessageHandler(Filters.regex('^(Remote|Permanent|Contractual|Hourly)$'), final)],
                 # FINAL: [MessageHandler(Filters.text, end_response)]
                 # BIO: [MessageHandler(Filters.text & ~Filters.command, bio)]
             },
@@ -206,7 +206,6 @@ def main():
         )
         updater.dispatcher.add_handler(CommandHandler('cancel', cancel))
         updater.dispatcher.add_handler(conv_handler)
-        updater.dispatcher.add_handler(CommandHandler('alldata', alldata))
         updater.start_polling()
         updater.idle()
     else:
