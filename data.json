@@ -7,6 +7,8 @@
         "jobtype": "Permanent",
         "requirements": "These are some awesome requirements",
         "takeCv": false,
+        "opened": false,
+        "closed": true,
         "repuname": "HiyabM"
     },
     {
@@ -17,6 +19,8 @@
         "jobtype": "Permanent",
         "requirements": "These are some awesome requirements",
         "takeCv": true,
+        "opened": true,
+        "closed": false,
         "repuname": "amenabe"
     },
     {
@@ -27,6 +31,8 @@
         "jobtype": "Permanent",
         "requirements": "These are some awesome requirements",
         "takeCv": false,
+        "opened": true,
+        "closed": true,
         "repuname": "james"
     },
     {
@@ -37,6 +43,20 @@
         "jobtype": "Permanent",
         "requirements": "These are some awesome requirements",
         "takeCv": false,
-        "repuname": "jesus"
+        "repuname": "jesus",
+        "closed": false,
+        "opened": true
+    },
+    {
+        "job_id": "23o4iu",
+        "title": "DATA ENCODER",
+        "company": "Dope company",
+        "desc": "Diploma { 10+3 } in secretetarial scince and office manegemnet/ computer scince / information/ technology / information scince with a minimum  of 2  years experience in computer application and data encodind How to apply all interested candidates who meet the above criteria and wish to be considered are send their cv in hbet671@gmail.com.",
+        "jobtype": "Private",
+        "requirements": "These are some awesome requirements",
+        "takeCv": false,
+        "repuname": "kevin",
+        "opened": false,
+        "closed": true
     }
 ]

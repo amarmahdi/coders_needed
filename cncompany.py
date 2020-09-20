@@ -179,7 +179,7 @@ def final(update, context):
 
 
 def main():
-    tst = False
+    tst = not False
     if tst:
         pp = PicklePersistence(filename='conversationbot')
         updater = Updater(
