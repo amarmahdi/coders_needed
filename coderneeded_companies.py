@@ -9,9 +9,9 @@ from telegram.ext import MessageHandler, Updater, CallbackQueryHandler, CommandH
 from constants import about_message
 
 # channel bot id
-BOT_ID = "-1001355338176"
+BOT_ID = "CHANNEL_BOT_ID"
 # company bot id
-BOT_TOKEN = "1346826306:AAEBRd8TbKAl4t52gqZGginATw91dTWea38"
+BOT_TOKEN = "COMPANY_BOT_ID"
 bot = Bot(token=BOT_TOKEN)
 TYPE, DESC, CMP, JOBTYPES, FINAL = range(5)
 
