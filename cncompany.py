@@ -6,8 +6,8 @@ from telegram.bot import Bot, Update
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import MessageHandler, Updater, CallbackQueryHandler, CommandHandler, MessageHandler, Filters, ConversationHandler, PicklePersistence, CallbackContext
 
-BOT_ID = "-1001355338176"
-BOT_TOKEN = "1341348836:AAFf-LQeV1ZByCN9MhOkF7zyaXfQ3AIOdSw"
+BOT_ID = "CHANNEL_ID"
+BOT_TOKEN = "BOT_TOKEN"
 FIRSTQID = 0
 user_id = 0
 bot = Bot(token=BOT_TOKEN)
