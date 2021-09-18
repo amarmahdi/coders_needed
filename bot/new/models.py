@@ -75,6 +75,12 @@ class DataBase:
                    (user_id, username, first_name, last_name, type, active,))
         conn.commit()
 
+    def get_user(self, username):
+        conn = self.get_connection()
+        db = conn.cursor()
+        db.execute('SELECT * FROM users WHERE (username) = ?', (username,))
+        # conn.commit()
+
     def add_company(self, user_id, company_name, company_logo, type, active):
         company_id = uuid.uuid4()
         conn = self.get_connection()
@@ -83,3 +89,8 @@ class DataBase:
                    (user_id, company_id, company_name, company_logo, type, active,))
 
         conn.commit()
+
+
+user = DataBase()
+u = user.get_user("Al_Am_Ma")
+print(u)
