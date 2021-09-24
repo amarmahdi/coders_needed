@@ -13,12 +13,12 @@ class KeyBoards:
         keyboard_main.add(add_company, post_job)
         return keyboard_main
 
-    def finish(self):
-        keyboard_finish = types.ReplyKeyboardMarkup(
+    def check(self):
+        keyboard_check = types.ReplyKeyboardMarkup(
             row_width=2, resize_keyboard=True)
-        finish = types.KeyboardButton(text="Finish")
-        keyboard_finish.add(finish)
-        return keyboard_finish
+        check = types.KeyboardButton(text="Check")
+        keyboard_check.add(check)
+        return keyboard_check
 
     def BackToMainMenu(self):
         keyboard_back = types.ReplayKeyboardMarkup(
@@ -26,3 +26,11 @@ class KeyBoards:
         BackToMenu = types.KeyboardButton(text="Back to main menu")
         keyboard_back.add(BackToMenu)
         return keyboard_back
+
+    def skip(self):
+        keyboard_skip = types.ReplyKeyboardMarkup(
+            row_width=2, resize_keyboard=True)
+        skip = types.KeyboardButton(text="Skip")
+        prev = types.KeyboardButton(text="Previous")
+        keyboard_skip.add(prev, skip)
+        return keyboard_skip
