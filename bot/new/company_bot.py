@@ -173,8 +173,10 @@ async def finish_creating_company(query: CallbackQuery, callback_data: dict):
                         messages['company_logo'], messages['company_phone'], messages['type'], messages['isActive'])
     if messages['company_logo'] != 'None':
         await BOT.edit_message_caption(chat_id=query.from_user.id, message_id=query.message.message_id, photo=messages['company_logo'], caption="Company Name: {}\nCompany Email: {}\nCompany Phone: {}\n {}".format(messages['company_name'], messages['company_email'], messages['company_phone'], msg))
+        await BOT.send_photo(chat_id="@TestCodersNeededAdmins", photo=messages['company_logo'], caption="Company Name: {}\nCompany Email: {}\nCompany Phone: {}".format(messages['company_name'], messages['company_email'], messages['company_phone']), reply_markup=CB.ADbuttons())
     else:
         await BOT.edit_message_text(chat_id=query.from_user.id, message_id=query.message.message_id, text="Company Logo: {}\nCompany Name: {}\nCompany Email: {}\nCompany Phone: {} \n {}".format(messages['company_logo'], messages['company_name'], messages['company_email'], messages['company_phone'], msg))
+        await BOT.send_message(chat_id="@TestCodersNeededAdmins", text="Company Logo: {}\nCompany Name: {}\nCompany Email: {}\nCompany Phone: {}".format(messages['company_logo'], messages['company_name'], messages['company_email'], messages['company_phone']), reply_markup=CB.ADbuttons())
 
 
 @DP.callback_query_handler(CPCallbackData.filter(action='Cancel'))
