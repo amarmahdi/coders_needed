@@ -1,8 +1,8 @@
-from os import EX_OSFILE
 import asyncio
 from aiogram import Dispatcher, Bot, executor
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher import FSMContext
+from aiogram.types import ContentType
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.dispatcher.filters import Text
 from aiogram.types.callback_query import CallbackQuery
@@ -49,6 +49,7 @@ class Form(StatesGroup):
     company_email = State()
     company_phone = State()
     company_logo = State()
+    UserPhone = State()
     last = State()
 
 
@@ -56,12 +57,26 @@ class Form(StatesGroup):
 async def start(message):
     if message.text == '/start' or message.text == 'Back to main menu':
         data = uData(message)
-        if DBMODEL.get_user(message.chat.id) != None:
+        message.usercontact = None
+        print(message.usercontact)
+        if message.contact == None:
+            await Form.UserPhone.set()
+            await BOT.send_message(chat_id=message.chat.id, text="Share your contact to start and press /start", reply_markup=KB.getPhone())
+        elif DBMODEL.get_user(message.chat.id) != None:
             await BOT.send_message(chat_id=message.chat.id, text=f"Hey {data['first_name']}, \n\nWelcome back! \n\n", reply_markup=KB.main())
         else:
             DBMODEL.add_user(data['id'], data['username'], data['first_name'],
                              data['last_name'], '2837483783478', data['type'], True)
             await BOT.send_message(chat_id=message.chat.id, text=f"Hey {data['first_name']}, \n\nWelcome to CodersNeeded telegram BOT 😊 \n\n", reply_markup=KB.main())
+
+
+@DP.message_handler(state=Form.UserPhone, content_types=ContentType.CONTACT)
+async def getUserContact(message, state: FSMContext):
+    # print(message)
+    message.usercontact = message.contact
+    print(message.usercontact)
+    await BOT.send_message(chat_id=message.chat.id, text="You have been registered successfuly.")
+    await state.finish()
 
 
 @DP.message_handler(content_types=['text'])

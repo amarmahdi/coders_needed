@@ -34,3 +34,10 @@ class KeyBoards:
         prev = types.KeyboardButton(text="Previous")
         keyboard_skip.add(prev, skip)
         return keyboard_skip
+
+    def getPhone(self):
+        keyboard_gp = types.ReplyKeyboardMarkup(
+            row_width=2, resize_keyboard=True)
+        gp = types.KeyboardButton(text="Send Phone", request_contact=True)
+        keyboard_gp.add(gp)
+        return keyboard_gp
