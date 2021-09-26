@@ -8,7 +8,7 @@ from aiogram.dispatcher.filters import Text
 from aiogram.types.callback_query import CallbackQuery
 import aiogram.utils.markdown as md
 from aiogram.types import ContentType, ReplyKeyboardRemove
-from callbacks import callBackBottons, CPCallbackData
+from callbacks import callBackBottons, CPCallbackData, ADCallbackData
 from KeyBoard import KeyBoards
 import tg_data
 import models
@@ -36,6 +36,7 @@ def uData(message):
 
 
 messages = {
+    'msg_id': None,
     'company_logo': None,
     'company_name': None,
     'company_email': None,
@@ -45,37 +46,38 @@ messages = {
 
 
 class Form(StatesGroup):
+    UserData = State()
     company_name = State()
     company_email = State()
     company_phone = State()
     company_logo = State()
-    UserPhone = State()
     last = State()
+
+
+msg1 = "Company Name: {}\nCompany Email: {}\nCompany Phone: {}\n {}"
+msg2 = "Company Logo: {}\nCompany Name: {}\nCompany Email: {}\nCompany Phone: {} \n {}"
 
 
 @DP.message_handler(commands=['start'], content_types=['text'])
 async def start(message):
     if message.text == '/start' or message.text == 'Back to main menu':
         data = uData(message)
-        message.usercontact = None
-        print(message.usercontact)
-        if message.contact == None:
-            await Form.UserPhone.set()
-            await BOT.send_message(chat_id=message.chat.id, text="Share your contact to start and press /start", reply_markup=KB.getPhone())
-        elif DBMODEL.get_user(message.chat.id) != None:
+        if DBMODEL.get_user(message.chat.id) != None:
             await BOT.send_message(chat_id=message.chat.id, text=f"Hey {data['first_name']}, \n\nWelcome back! \n\n", reply_markup=KB.main())
         else:
-            DBMODEL.add_user(data['id'], data['username'], data['first_name'],
-                             data['last_name'], '2837483783478', data['type'], True)
-            await BOT.send_message(chat_id=message.chat.id, text=f"Hey {data['first_name']}, \n\nWelcome to CodersNeeded telegram BOT 😊 \n\n", reply_markup=KB.main())
+            await BOT.send_message(chat_id=message.chat.id, text="To start you have to share your contacts", reply_markup=KB.getPhone())
+            await Form.UserData.set()
 
 
-@DP.message_handler(state=Form.UserPhone, content_types=ContentType.CONTACT)
-async def getUserContact(message, state: FSMContext):
-    # print(message)
-    message.usercontact = message.contact
-    print(message.usercontact)
-    await BOT.send_message(chat_id=message.chat.id, text="You have been registered successfuly.")
+@DP.message_handler(state=Form.UserData, content_types=ContentType.CONTACT)
+async def getUserData(message, state: FSMContext):
+    data = uData(message)
+    async with state.proxy() as contactData:
+        contactData['userContact'] = message.contact.phone_number
+    # print(contactData['userContact'])
+    DBMODEL.add_user(data['id'], data['username'], data['first_name'],
+                     data['last_name'], str(contactData['userContact']), data['type'], True)
+    await BOT.send_message(chat_id=message.chat.id, text=f"Hey {data['first_name']}, \n\nWelcome to CodersNeeded telegram BOT 😊 \n\n", reply_markup=KB.main())
     await state.finish()
 
 
@@ -165,42 +167,57 @@ async def last_check(message, state: FSMContext):
         async with state.proxy() as data:
             data['active'] = False
         txt = "\n\nYour Profile is being verified.\nCoders Needed"
-
         messages['company_logo'] = data['company_logo_id']
         messages['company_name'] = data['company_name']
         messages['company_email'] = data['company_email']
         messages['company_phone'] = data['company_phone']
         messages['isActive'] = data['active']
         messages['type'] = data['type']
-
+        print(message.chat.id)
         if data['company_logo_id'] != 'None':
             await state.finish()
-            await BOT.send_photo(chat_id=message.chat.id, photo=data['company_logo_id'], caption="Company Name: {}\nCompany Email: {}\nCompany Phone: {}\n".format(data['company_name'], data['company_email'], data['company_phone']), reply_markup=CB.CPbuttons(edit_msg=str(txt)))
+            await BOT.send_photo(chat_id=message.chat.id, photo=data['company_logo_id'], caption=msg1.format(data['company_name'], data['company_email'], data['company_phone'], ''), reply_markup=CB.CPbuttons(edit_msg=str(txt)))
         else:
             await state.finish()
-            await BOT.send_message(chat_id=message.chat.id, text="Company Logo: {}\nCompany Name: {}\nCompany Email: {}\nCompany Phone: {}".format(data['company_logo_id'], data['company_name'], data['company_email'], data['company_phone']), reply_markup=CB.CPbuttons(edit_msg=str(txt)))
+            await BOT.send_message(chat_id=message.chat.id, text=msg2.format(data['company_logo_id'], data['company_name'], data['company_email'], data['company_phone'], ''), reply_markup=CB.CPbuttons(edit_msg=str(txt)))
 
 
 @DP.callback_query_handler(CPCallbackData.filter(action='Proceed'))
 async def finish_creating_company(query: CallbackQuery, callback_data: dict):
     msg = callback_data['e_message']
-    DBMODEL.add_company(query.from_user.id, messages['company_name'], messages['company_email'],
-                        messages['company_logo'], messages['company_phone'], messages['type'], messages['isActive'])
+    messages['msg_id'] = query.message.message_id
     if messages['company_logo'] != 'None':
-        await BOT.edit_message_caption(chat_id=query.from_user.id, message_id=query.message.message_id, photo=messages['company_logo'], caption="Company Name: {}\nCompany Email: {}\nCompany Phone: {}\n {}".format(messages['company_name'], messages['company_email'], messages['company_phone'], msg))
-        await BOT.send_photo(chat_id="@TestCodersNeededAdmins", photo=messages['company_logo'], caption="Company Name: {}\nCompany Email: {}\nCompany Phone: {}".format(messages['company_name'], messages['company_email'], messages['company_phone']), reply_markup=CB.ADbuttons())
+        await BOT.edit_message_caption(chat_id=query.from_user.id, message_id=query.message.message_id, caption=msg1.format(messages['company_name'], messages['company_email'], messages['company_phone'], msg))
+        await BOT.send_photo(chat_id="@TestCodersNeededAdmins", photo=messages['company_logo'], caption=msg1.format(messages['company_name'], messages['company_email'], messages['company_phone'], ''), reply_markup=CB.ADbuttons('Verified'))
     else:
-        await BOT.edit_message_text(chat_id=query.from_user.id, message_id=query.message.message_id, text="Company Logo: {}\nCompany Name: {}\nCompany Email: {}\nCompany Phone: {} \n {}".format(messages['company_logo'], messages['company_name'], messages['company_email'], messages['company_phone'], msg))
-        await BOT.send_message(chat_id="@TestCodersNeededAdmins", text="Company Logo: {}\nCompany Name: {}\nCompany Email: {}\nCompany Phone: {}".format(messages['company_logo'], messages['company_name'], messages['company_email'], messages['company_phone']), reply_markup=CB.ADbuttons())
+        await BOT.edit_message_text(chat_id=query.from_user.id, message_id=query.message.message_id, text=msg2.format(messages['company_logo'], messages['company_name'], messages['company_email'], messages['company_phone'], msg))
+        await BOT.send_message(chat_id="@TestCodersNeededAdmins", text=msg2.format(messages['company_logo'], messages['company_name'], messages['company_email'], messages['company_phone'], ''), reply_markup=CB.ADbuttons('Verified'))
+
+    return DBMODEL.add_company(query.from_user.id, query.message.message_id, messages['company_name'], messages['company_email'],
+                               messages['company_logo'], messages['company_phone'], messages['type'], messages['isActive'])
+
+
+@DP.callback_query_handler(ADCallbackData.filter(action='Accept'))
+async def accepted_company(query: CallbackQuery, callback_data: dict):
+    # print(query, '///////////////////query')
+    # print(callback_data, '///////////////////message')
+    msg = callback_data['e_msg']
+    if messages['company_logo'] != 'None':
+        await BOT.edit_message_caption(chat_id=query.from_user.id, message_id=messages['msg_id'], caption=msg1.format(messages['company_name'], messages['company_email'], messages['company_phone'], msg))
+    else:
+        await BOT.edit_message_text(chat_id=query.from_user.id, message_id=messages['msg_id'], text=msg2.format(messages['company_logo'], messages['company_name'], messages['company_email'], messages['company_phone'], msg))
+
+    await BOT.send_message(chat_id=query.from_user.id, text="You Have Been Successfuly Signd Up")
+    return DBMODEL.update_company(messages['msg_id'], True)
 
 
 @DP.callback_query_handler(CPCallbackData.filter(action='Cancel'))
 async def cancel_createing_company(query: CallbackQuery, callback_data: dict):
     msg = callback_data['e_message']
     if messages['company_logo'] != 'None':
-        await BOT.edit_message_caption(chat_id=query.from_user.id, message_id=query.message.message_id, photo=messages['company_logo'], caption="Company Name: {}\nCompany Email: {}\nCompany Phone: {}\n {}".format(messages['company_name'], messages['company_email'], messages['company_phone'], msg))
+        await BOT.edit_message_caption(chat_id=query.from_user.id, message_id=query.message.message_id, photo=messages['company_logo'], caption=msg1.format(messages['company_name'], messages['company_email'], messages['company_phone'], msg))
     else:
-        await BOT.edit_message_text(chat_id=query.from_user.id, message_id=query.message.message_id, text="Company Logo: {}\nCompany Name: {}\nCompany Email: {}\nCompany Phone: {} \n {}".format(messages['company_logo'], messages['company_name'], messages['company_email'], messages['company_phone'], msg))
+        await BOT.edit_message_text(chat_id=query.from_user.id, message_id=query.message.message_id, text=msg2.format(messages['company_logo'], messages['company_name'], messages['company_email'], messages['company_phone'], msg))
 
 
 if __name__ == "__main__":

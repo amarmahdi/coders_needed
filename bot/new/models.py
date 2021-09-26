@@ -63,10 +63,11 @@ class DataBase:
                     id	INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
                     user_id INTIGER NOT NULL,
                     company_id VARCHAR(255) NOT NULL UNIQUE,
+                    company_msg_id VARCHAR(255) NOT NULL,
                     company_name VARCHAR(255) NOT NULL UNIQUE,
                     company_email VARCHAR(255),
                     company_logo VARCHAR(255),
-                    company_phone VARCHAR(20) NOT NULL UNIQUE,
+                    company_phone VARCHAR(20) NOT NULL,
                     type TEXT NOT NULL,
                     active TEXT NOT NULL
                 )
@@ -111,12 +112,12 @@ class DataBase:
         row = db.fetchone()
         return row
 
-    def add_company(self, user_id, company_name, company_email, company_logo, company_phone, type, active):
+    def add_company(self, user_id, company_msg_id, company_name, company_email, company_logo, company_phone, type, active):
         company_id = uuid.uuid4()
         conn = self.get_connection()
         db = conn.cursor()
-        db.execute('INSERT INTO companies (user_id, company_id, company_name, company_email, company_logo, company_phone, type, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                   (user_id, str(company_id), company_name, company_email, company_logo, company_phone, type, active,))
+        db.execute('INSERT INTO companies (user_id, company_id, company_msg_id, company_name, company_email, company_logo, company_phone, type, active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                   (user_id, str(company_id), company_msg_id, company_name, company_email, company_logo, company_phone, type, active,))
 
         conn.commit()
 
@@ -127,3 +128,10 @@ class DataBase:
                    (company_name,))
         row = db.fetchone()
         return row
+
+    def update_company(self, company_msg_id, active):
+        conn = self.get_connection()
+        db = conn.cursor()
+        db.execute('UPDATE companies SET (active) = ? WHERE (company_msg_id) = ?',
+                   (active, company_msg_id,))
+        conn.commit()
