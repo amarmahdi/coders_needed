@@ -92,7 +92,8 @@ async def getUserData(message, state: FSMContext):
     async with state.proxy() as contactData:
         contactData['userContact'] = message.contact.phone_numbe
     DBMODEL.add_user(data['id'], data['username'], data['first_name'],
-                     data['last_name'], str(contactData['userContact']), data['type'], True)
+                     data['last_name'], str(contactData['userContact']),
+                     data['type'], True)
     await BOT.send_message(
         chat_id=message.chat.id,
         text=f"Hey {data['first_name']}, \n\nWelcome to CodersNeeded telegram BOT 😊 \n\n",
@@ -241,24 +242,15 @@ async def last_check(message, state: FSMContext):
                 chat_id=message.chat.id,
                 photo=data['company_logo_id'],
                 caption=msg1.format(
-                    data['company_name'],
-                    data['company_email'],
-                    data['company_phone'],
-                    ''
-                ),
+                    data['company_name'], data['company_email'], data['company_phone'], ''),
                 reply_markup=CB.CPbuttons(edit_msg=str(txt))
             )
         else:
             await state.finish()
             await BOT.send_message(
                 chat_id=message.chat.id,
-                text=msg2.format(
-                    data['company_logo_id'],
-                    data['company_name'],
-                    data['company_email'],
-                    data['company_phone'],
-                    ''
-                ),
+                text=msg2.format(data['company_logo_id'], data['company_name'],
+                                 data['company_email'], data['company_phone'], ''),
                 reply_markup=CB.CPbuttons(edit_msg=str(txt))
             )
 
@@ -291,16 +283,7 @@ async def finish_creating_company(query: CallbackQuery, callback_data: dict):
             reply_markup=CB.ADbuttons('Verified')
         )
 
-    return DBMODEL.add_company(
-        query.from_user.id,
-        query.message.message_id,
-        name,
-        email,
-        logo,
-        phone,
-        typemsg,
-        isActive
-    )
+    return DBMODEL.add_company(query.from_user.id, query.message.message_id, name, email, logo, phone, typemsg, isActive)
 
 
 @DP.callback_query_handler(ADCallbackData.filter(action='Accept'))
