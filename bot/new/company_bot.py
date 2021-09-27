@@ -332,6 +332,18 @@ async def accepted_company(query: CallbackQuery, callback_data: dict):
             )
         )
     else:
+        print(query)
+        await BOT.edit_message_text(
+            chat_id="@TestCodersNeededAdmins",
+            message_id=query.message.message_id,
+            text=msg2.format(
+                messages['company_logo'],
+                messages['company_name'],
+                messages['company_email'],
+                messages['company_phone'],
+                'Verified by {}'.format(query.from_user.first_name)
+            )
+        )
         await BOT.edit_message_text(
             chat_id=query.from_user.id,
             message_id=messages['msg_id'],
