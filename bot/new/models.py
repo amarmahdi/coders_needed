@@ -64,7 +64,7 @@ class DataBase:
                     user_id INTIGER NOT NULL,
                     company_id VARCHAR(255) NOT NULL UNIQUE,
                     company_msg_id VARCHAR(255) NOT NULL,
-                    company_name VARCHAR(255) NOT NULL UNIQUE,
+                    company_name VARCHAR(255) NOT NULL,
                     company_email VARCHAR(255),
                     company_logo VARCHAR(255),
                     company_phone VARCHAR(20) NOT NULL,

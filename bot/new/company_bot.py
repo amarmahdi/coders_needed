@@ -58,15 +58,6 @@ msg1 = "Company Name: {}\nCompany Email: {}\nCompany Phone: {}\n {}"
 msg2 = "Company Logo: {}\nCompany Name: {}\nCompany Email: {}\nCompany Phone: {} \n {}"
 
 
-name = messages['company_name']
-email = messages['company_email']
-phone = messages['company_phone']
-logo = messages['company_logo']
-typemsg = messages['type']
-msgid = messages['msg_id']
-isActive = messages['isActive']
-
-
 @DP.message_handler(commands=['start'], content_types=['text'])
 async def start(message):
     if message.text == '/start' or message.text == 'Back to main menu':
@@ -90,7 +81,7 @@ async def start(message):
 async def getUserData(message, state: FSMContext):
     data = uData(message)
     async with state.proxy() as contactData:
-        contactData['userContact'] = message.contact.phone_numbe
+        contactData['userContact'] = message.contact.phone_number
     DBMODEL.add_user(data['id'], data['username'], data['first_name'],
                      data['last_name'], str(contactData['userContact']),
                      data['type'], True)
@@ -242,15 +233,24 @@ async def last_check(message, state: FSMContext):
                 chat_id=message.chat.id,
                 photo=data['company_logo_id'],
                 caption=msg1.format(
-                    data['company_name'], data['company_email'], data['company_phone'], ''),
+                    data['company_name'],
+                    data['company_email'],
+                    data['company_phone'],
+                    ''
+                ),
                 reply_markup=CB.CPbuttons(edit_msg=str(txt))
             )
         else:
             await state.finish()
             await BOT.send_message(
                 chat_id=message.chat.id,
-                text=msg2.format(data['company_logo_id'], data['company_name'],
-                                 data['company_email'], data['company_phone'], ''),
+                text=msg2.format(
+                    data['company_logo_id'],
+                    data['company_name'],
+                    data['company_email'],
+                    data['company_phone'],
+                    ''
+                ),
                 reply_markup=CB.CPbuttons(edit_msg=str(txt))
             )
 
@@ -263,27 +263,58 @@ async def finish_creating_company(query: CallbackQuery, callback_data: dict):
         await BOT.edit_message_caption(
             chat_id=query.from_user.id,
             message_id=query.message.message_id,
-            caption=msg1.format(name, email, phone, msg)
+            caption=msg1.format(
+                messages['company_name'],
+                messages['company_email'],
+                messages['company_phone'],
+                msg
+            )
         )
         await BOT.send_photo(
             chat_id="@TestCodersNeededAdmins",
-            photo=logo,
-            caption=msg1.format(name, email, phone, ''),
+            photo=messages['company_logo'],
+            caption=msg1.format(
+                messages['company_name'],
+                messages['company_email'],
+                messages['company_phone'],
+                ''
+            ),
             reply_markup=CB.ADbuttons('Verified')
         )
     else:
         await BOT.edit_message_text(
             chat_id=query.from_user.id,
             message_id=query.message.message_id,
-            text=msg2.format(logo, name, email, phone, msg)
+            text=msg2.format(
+                messages['company_logo'],
+                messages['company_name'],
+                messages['company_email'],
+                messages['company_phone'],
+                msg
+            )
         )
         await BOT.send_message(
             chat_id="@TestCodersNeededAdmins",
-            text=msg2.format(logo, name, email, phone, ''),
+            text=msg2.format(
+                messages['company_logo'],
+                messages['company_name'],
+                messages['company_email'],
+                messages['company_phone'],
+                ''
+            ),
             reply_markup=CB.ADbuttons('Verified')
         )
 
-    return DBMODEL.add_company(query.from_user.id, query.message.message_id, name, email, logo, phone, typemsg, isActive)
+    return DBMODEL.add_company(
+        query.from_user.id,
+        query.message.message_id,
+        messages['company_name'],
+        messages['company_email'],
+        messages['company_logo'],
+        messages['company_phone'],
+        messages['type'],
+        messages['isActive']
+    )
 
 
 @DP.callback_query_handler(ADCallbackData.filter(action='Accept'))
@@ -292,14 +323,25 @@ async def accepted_company(query: CallbackQuery, callback_data: dict):
     if messages['company_logo'] != 'None':
         await BOT.edit_message_caption(
             chat_id=query.from_user.id,
-            message_id=msgid,
-            caption=msg1.format(name, email, phone, msg)
+            message_id=messages['msg_id'],
+            caption=msg1.format(
+                messages['company_name'],
+                messages['company_email'],
+                messages['company_phone'],
+                msg
+            )
         )
     else:
         await BOT.edit_message_text(
             chat_id=query.from_user.id,
-            message_id=msgid,
-            text=msg2.format(logo, name, email, phone, msg)
+            message_id=messages['msg_id'],
+            text=msg2.format(
+                messages['company_logo'],
+                messages['company_name'],
+                messages['company_email'],
+                messages['company_phone'],
+                msg
+            )
         )
 
     await BOT.send_message(
@@ -316,14 +358,25 @@ async def cancel_createing_company(query: CallbackQuery, callback_data: dict):
         await BOT.edit_message_caption(
             chat_id=query.from_user.id,
             message_id=query.message.message_id,
-            photo=logo,
-            caption=msg1.format(name, email, phone, msg)
+            photo=messages['company_logo'],
+            caption=msg1.format(
+                messages['company_name'],
+                messages['company_email'],
+                messages['company_phone'],
+                msg
+            )
         )
     else:
         await BOT.edit_message_text(
             chat_id=query.from_user.id,
             message_id=query.message.message_id,
-            text=msg2.format(name, name, email, phone, msg)
+            text=msg2.format(
+                messages['company_logo'],
+                messages['company_name'],
+                messages['company_email'],
+                messages['company_phone'],
+                msg
+            )
         )
 
 
