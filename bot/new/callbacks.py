@@ -3,6 +3,7 @@ from aiogram.utils.callback_data import CallbackData
 
 CPCallbackData = CallbackData('company', 'action', 'e_message')
 ADCallbackData = CallbackData('admin', 'action', 'e_msg')
+AUCallbackData = CallbackData('user', 'action', 'e_msg')
 
 
 class callBackBottons:
@@ -24,5 +25,14 @@ class callBackBottons:
             text="Accept", callback_data=ADCallbackData.new(action="Accept", e_msg=edit_msg))
         keyboard_d = InlineKeyboardButton(
             text="Deny", callback_data=ADCallbackData.new(action="Deny", e_msg=edit_msg))
+        keyboard_ad.add(keyboard_a, keyboard_d)
+        return keyboard_ad
+
+    def ApproveUpload(self, edit_msg):
+        keyboard_ad = InlineKeyboardMarkup()
+        keyboard_a = InlineKeyboardButton(
+            text="Save", callback_data=AUCallbackData.new(action="Save", e_msg=edit_msg))
+        keyboard_d = InlineKeyboardButton(
+            text="Cancel", callback_data=AUCallbackData.new(action="Cancel", e_msg=edit_msg))
         keyboard_ad.add(keyboard_a, keyboard_d)
         return keyboard_ad

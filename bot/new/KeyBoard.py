@@ -41,3 +41,39 @@ class KeyBoards:
         gp = types.KeyboardButton(text="Send Phone", request_contact=True)
         keyboard_gp.add(gp)
         return keyboard_gp
+
+    def getJobTypes(self):
+        btnMethods = []
+        keyboard_main = types.ReplyKeyboardMarkup(
+            row_width=4, resize_keyboard=True)
+        buttons = ["Permanent", "Part Time", "Contractual",
+                   "Hourly", "Remote", "Take Me home"]
+        keyboard_main.add(types.KeyboardButton("Permanent"),
+                          types.KeyboardButton("Contractual"),
+                          types.KeyboardButton("Hourly"),
+                          types.KeyboardButton("Remote"),
+                          types.KeyboardButton("Take me Home"),
+                          )
+        return keyboard_main
+
+    def getJobCats(self):
+        keyboard_main = types.ReplyKeyboardMarkup(
+            row_width=4, resize_keyboard=True)
+        keyboard_main.add(types.KeyboardButton("Backend Development"),
+                          types.KeyboardButton("Frontend Development"),
+                          types.KeyboardButton("App Development"),
+                          types.KeyboardButton("Bot Development"),
+                          types.KeyboardButton("Full Stack"),
+                          types.KeyboardButton("Other"),
+                          )
+        keyboard_main.add(types.KeyboardButton("Take me Home"))
+        return keyboard_main
+
+    def getContactType(self):
+        keyboard_main = types.ReplyKeyboardMarkup(
+            row_width=4, resize_keyboard=True)
+        keyboard_main.add(types.KeyboardButton("Directly on telegram"),
+                          types.KeyboardButton("With E-mail"),
+                          )
+        keyboard_main.add(types.KeyboardButton("Take me Home"))
+        return keyboard_main
