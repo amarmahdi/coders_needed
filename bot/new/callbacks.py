@@ -2,8 +2,9 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.callback_data import CallbackData
 
 CPCallbackData = CallbackData('company', 'action', 'e_message')
-ADCallbackData = CallbackData('admin', 'action', 'e_msg')
-AUCallbackData = CallbackData('user', 'action', 'e_msg')
+ADCallbackData = CallbackData('admin', 'action')
+AUCallbackData = CallbackData('user', 'action')
+JADCallbackData = CallbackData('job', 'action')
 
 
 class callBackBottons:
@@ -28,11 +29,20 @@ class callBackBottons:
         keyboard_ad.add(keyboard_a, keyboard_d)
         return keyboard_ad
 
-    def ApproveUpload(self, edit_msg):
+    def ApproveUpload(self):
         keyboard_ad = InlineKeyboardMarkup()
         keyboard_a = InlineKeyboardButton(
-            text="Save", callback_data=AUCallbackData.new(action="Save", e_msg=edit_msg))
+            text="Save", callback_data=AUCallbackData.new(action="Save"))
         keyboard_d = InlineKeyboardButton(
-            text="Cancel", callback_data=AUCallbackData.new(action="Cancel", e_msg=edit_msg))
+            text="Cancel", callback_data=AUCallbackData.new(action="Cancel"))
+        keyboard_ad.add(keyboard_a, keyboard_d)
+        return keyboard_ad
+
+    def JADbuttons(self):
+        keyboard_ad = InlineKeyboardMarkup()
+        keyboard_a = InlineKeyboardButton(
+            text="Accept", callback_data=JADCallbackData.new(action="Accept"))
+        keyboard_d = InlineKeyboardButton(
+            text="Deny", callback_data=JADCallbackData.new(action="Deny"))
         keyboard_ad.add(keyboard_a, keyboard_d)
         return keyboard_ad

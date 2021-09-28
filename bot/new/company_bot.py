@@ -9,7 +9,7 @@ from aiogram.dispatcher.filters import Text
 from aiogram.types.callback_query import CallbackQuery
 import aiogram.utils.markdown as md
 from aiogram.types import ContentType, ReplyKeyboardRemove
-from callbacks import callBackBottons, CPCallbackData, ADCallbackData, AUCallbackData
+from callbacks import callBackBottons, CPCallbackData, ADCallbackData, AUCallbackData, JADCallbackData
 from KeyBoard import KeyBoards
 import tg_data
 import models
@@ -47,6 +47,7 @@ messages = {
 
 
 jobData = {
+    'job_id': None,
     'job_title': None,
     'company_name': None,
     'job_desc': None,
@@ -114,12 +115,6 @@ async def getUserData(message, state: FSMContext):
     )
     await state.finish()
 
-#################################################
-# Jop post handler                              #
-# Here are the methods for the job post handler #
-#                                               #
-#################################################
-
 
 @DP.message_handler(content_types=['text'])
 async def job_post_handler(message):
@@ -131,129 +126,17 @@ async def job_post_handler(message):
         await PostForm.job_title.set()
 
 
-# job title message handler
-@DP.message_handler(state=PostForm.job_title)
-async def add_job_title(message, state: FSMContext):
-    async with state.proxy() as postData:
-        postData['job_title'] = message.text
-    await BOT.send_message(
-        chat_id=message.chat.id,
-        text="What's the company ?",
-        reply_markup=ReplyKeyboardRemove()
-    )
-    await PostForm.company_name.set()
-
-
-# job title message handler
-@DP.message_handler(state=PostForm.company_name)
-async def add_company_name(message, state: FSMContext):
-    async with state.proxy() as postData:
-        postData['company_name'] = message.text
-    await BOT.send_message(
-        chat_id=message.chat.id,
-        text="Tell us about the job ?",
-    )
-
-    await PostForm.job_desc.set()
-
-# description handler
-
-
-@DP.message_handler(state=PostForm.job_desc)
-async def add_job_desc(message, state: FSMContext):
-    async with state.proxy() as postData:
-        postData['job_desc'] = message.text
-    await BOT.send_message(
-        chat_id=message.chat.id,
-        text="Choose the job type ?",
-        reply_markup=KB.getJobTypes()
-    )
-
-    await PostForm.job_type.set()
-
-
-# Categorize the job
-@DP.message_handler(state=PostForm.job_type)
-async def add_job_type(message, state: FSMContext):
-    async with state.proxy() as postData:
-        postData['job_type'] = message.text
-    await BOT.send_message(
-        chat_id=message.chat.id,
-        text="Categorize your job ?",
-        reply_markup=KB.getJobCats()
-    )
-    await PostForm.contact_method.set()
-
-# define the contact method
-
-
-@DP.message_handler(state=PostForm.contact_method)
-async def add_contact_method(message, state: FSMContext):
-    async with state.proxy() as postData:
-        postData['category'] = message.text
-
-    await BOT.send_message(
-        chat_id=message.chat.id,
-        text="Select how applicants should contact you ?",
-        reply_markup=KB.getContactType()
-    )
-    await PostForm.review.set()
-
-
-@DP.message_handler(state=PostForm.review)
-async def add_review(message, state: FSMContext):
-    async with state.proxy() as postData:
-        postData['contact_method'] = message.text
-
-    jobData['job_title'] = postData['job_title']
-    jobData['company_name'] = postData['company_name']
-    jobData['job_desc'] = postData['job_desc']
-    jobData['job_type'] = postData['job_type']
-    jobData['category'] = postData['category']
-    jobData['contact_method'] = postData['contact_method']
-
-    await BOT.send_message(
-        chat_id=message.chat.id,
-        text=jobP.format(
-            jobData['job_title'],
-            jobData['company_name'],
-            jobData['job_type'],
-            jobData['job_desc'],
-            jobData['category'],
-            jobData['contact_method']
-        ),
-        reply_markup=CB.ApproveUpload("hi")
-    )
+@ DP.message_handler(state='*', commands='cancel')
+@ DP.message_handler(Text(equals='cancel', ignore_case=True))
+async def cancel_state(message, state: FSMContext):
+    current_state = await state.get_state()
+    if current_state is None:
+        return
     await state.finish()
-
-
-@DP.callback_query_handler(AUCallbackData.filter(action='Save'))
-async def finish_creating_company(query: CallbackQuery, callback_data: dict):
-    msg = callback_data['e_msg']
-    await BOT.edit_message_text(
-        chat_id=query.from_user.id,
-        message_id=query.message.message_id,
-        text=jobP.format(
-            jobData['job_title'],
-            jobData['company_name'],
-            jobData['job_type'],
-            jobData['job_desc'],
-            jobData['category'],
-            jobData['contact_method']
-        ) + "\n\n Your post is sent for moderation, we will get pack you shortly! \n\n Coders Needed"
-    )
-
     await BOT.send_message(
-        chat_id="@TestCodersNeededAdmins",
-        text=jobP.format(
-            jobData['job_title'],
-            jobData['company_name'],
-            jobData['job_type'],
-            jobData['job_desc'],
-            jobData['category'],
-            jobData['contact_method']
-        ),
-        reply_markup=CB.ADbuttons('Verified')
+        chat_id=message.chat.id,
+        text="Canceled",
+        reply_markup=ReplyKeyboardRemove()
     )
 
 
@@ -270,20 +153,6 @@ async def add_company(message, state: FSMContext):
             reply_markup=ReplyKeyboardRemove()
         )
         await Form.company_name.set()
-
-
-@ DP.message_handler(state='*', commands='cancel')
-@ DP.message_handler(Text(equals='cancel', ignore_case=True))
-async def cancel_state(message, state: FSMContext):
-    current_state = await state.get_state()
-    if current_state is None:
-        return
-    await state.finish()
-    await BOT.send_message(
-        chat_id=message.chat.id,
-        text="Canceled",
-        reply_markup=ReplyKeyboardRemove()
-    )
 
 
 @ DP.message_handler(state=Form.company_name)
@@ -537,7 +406,150 @@ async def accepted_company(query: CallbackQuery, callback_data: dict):
     return DBMODEL.update_company(messages['msg_id'], True)
 
 
-@ DP.callback_query_handler(CPCallbackData.filter(action='Cancel'))
+#################################################
+# Jop post handler                              #
+# Here are the methods for the job post handler #
+#                                               #
+#################################################
+
+
+# job title message handler
+@DP.message_handler(state=PostForm.job_title)
+async def add_job_title(message, state: FSMContext):
+    async with state.proxy() as postData:
+        postData['id'] = message.chat.id
+        postData['job_title'] = message.text
+    await BOT.send_message(
+        chat_id=message.chat.id,
+        text="What's the company ?",
+        reply_markup=ReplyKeyboardRemove()
+    )
+    await PostForm.company_name.set()
+
+
+# job title message handler
+@DP.message_handler(state=PostForm.company_name)
+async def add_company_name(message, state: FSMContext):
+    async with state.proxy() as postData:
+        postData['company_name'] = message.text
+    await BOT.send_message(
+        chat_id=message.chat.id,
+        text="Tell us about the job ?",
+    )
+
+    await PostForm.job_desc.set()
+
+# description handler
+
+
+@DP.message_handler(state=PostForm.job_desc)
+async def add_job_desc(message, state: FSMContext):
+    async with state.proxy() as postData:
+        postData['job_desc'] = message.text
+    await BOT.send_message(
+        chat_id=message.chat.id,
+        text="Choose the job type ?",
+        reply_markup=KB.getJobTypes()
+    )
+
+    await PostForm.job_type.set()
+
+
+# Categorize the job
+@DP.message_handler(state=PostForm.job_type)
+async def add_job_type(message, state: FSMContext):
+    async with state.proxy() as postData:
+        postData['job_type'] = message.text
+    await BOT.send_message(
+        chat_id=message.chat.id,
+        text="Categorize your job ?",
+        reply_markup=KB.getJobCats()
+    )
+    await PostForm.contact_method.set()
+
+# define the contact method
+
+
+@DP.message_handler(state=PostForm.contact_method)
+async def add_contact_method(message, state: FSMContext):
+    async with state.proxy() as postData:
+        postData['category'] = message.text
+
+    await BOT.send_message(
+        chat_id=message.chat.id,
+        text="Select how applicants should contact you ?",
+        reply_markup=KB.getContactType()
+    )
+    await PostForm.review.set()
+
+
+@DP.message_handler(state=PostForm.review)
+async def add_review(message, state: FSMContext):
+    async with state.proxy() as postData:
+        postData['contact_method'] = message.text
+
+    jobData['job_id'] = postData['id']
+    jobData['job_title'] = postData['job_title']
+    jobData['company_name'] = postData['company_name']
+    jobData['job_desc'] = postData['job_desc']
+    jobData['job_type'] = postData['job_type']
+    jobData['category'] = postData['category']
+    jobData['contact_method'] = postData['contact_method']
+
+    await BOT.send_message(
+        chat_id=message.chat.id,
+        text=jobP.format(
+            jobData['job_title'],
+            jobData['company_name'],
+            jobData['job_type'],
+            jobData['job_desc'],
+            jobData['category'],
+            jobData['contact_method']
+        ),
+        reply_markup=CB.ApproveUpload()
+    )
+    await state.finish()
+
+
+@DP.callback_query_handler(AUCallbackData.filter(action='Save'))
+async def finish_creating_company(query: CallbackQuery, callback_data: dict):
+    await BOT.edit_message_text(
+        chat_id=query.from_user.id,
+        message_id=query.message.message_id,
+        text=jobP.format(
+            jobData['job_title'],
+            jobData['company_name'],
+            jobData['job_type'],
+            jobData['job_desc'],
+            jobData['category'],
+            jobData['contact_method']
+        ) + "\n\n Your post is sent for moderation, we will get pack you shortly! \n\n Coders Needed"
+    )
+
+    await BOT.send_message(
+        chat_id="@TestCodersNeededAdmins",
+        text=jobP.format(
+            jobData['job_title'],
+            jobData['company_name'],
+            jobData['job_type'],
+            jobData['job_desc'],
+            jobData['category'],
+            jobData['contact_method']
+        ),
+        reply_markup=CB.JADbuttons()
+    )
+
+
+@DP.callback_query_handler(JADCallbackData.filter(action='Accept'))
+async def job_post_accept(query: CallbackQuery, callback_data: dict):
+    print(jobData)
+    await BOT.send_message(
+        chat_id=jobData['job_id'],
+        text='You have been verified'
+    )
+
+
+@DP.callback_query_handler(CPCallbackData.filter(action='Cancel'))
 async def cancel_createing_company(query: CallbackQuery, callback_data: dict):
     msg = callback_data['e_message']
     if messages['company_logo'] != 'None':
