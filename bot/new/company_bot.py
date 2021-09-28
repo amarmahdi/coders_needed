@@ -322,6 +322,16 @@ async def accepted_company(query: CallbackQuery, callback_data: dict):
     msg = callback_data['e_msg']
     if messages['company_logo'] != 'None':
         await BOT.edit_message_caption(
+            chat_id="@TestCodersNeededAdmins",
+            message_id=query.message.message_id,
+            caption=msg1.format(
+                messages['company_name'],
+                messages['company_email'],
+                messages['company_phone'],
+                'Verified by {}'.format(query.from_user.first_name)
+            )
+        )
+        await BOT.edit_message_caption(
             chat_id=query.from_user.id,
             message_id=messages['msg_id'],
             caption=msg1.format(
@@ -378,6 +388,10 @@ async def cancel_createing_company(query: CallbackQuery, callback_data: dict):
                 msg
             )
         )
+        await BOT.send_message(
+            chat_id=query.from_user.id,
+            text="Cancel"
+        )
     else:
         await BOT.edit_message_text(
             chat_id=query.from_user.id,
@@ -389,6 +403,10 @@ async def cancel_createing_company(query: CallbackQuery, callback_data: dict):
                 messages['company_phone'],
                 msg
             )
+        )
+        await BOT.send_message(
+            chat_id=query.from_user.id,
+            text="Cancel"
         )
 
 
